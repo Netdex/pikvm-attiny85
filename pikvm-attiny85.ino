@@ -89,12 +89,8 @@ void setup() {
 }
 
 void loop() {
-  if (spi_rx_ready()) {
-    uint8_t data[KVMD_MSG_SZ];
-    volatile uint8_t *rx_data = spi_rx_get();
-    for (int i = 0; i < KVMD_MSG_SZ; ++i) {
-      data[i] = rx_data[i];
-    }
+  uint8_t data[KVMD_MSG_SZ];
+  if (spi_rx_get(data)) {
     send_response(handle_request(data));
   }
   TrinketHidCombo.poll();
