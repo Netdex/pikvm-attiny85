@@ -5,6 +5,7 @@
 
 #include "keymap.h"
 
+// state machine converting commands to hid reports
 struct keyboard {
   constexpr static size_t key_limit = 5;
 

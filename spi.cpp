@@ -4,15 +4,19 @@
 #include <util/atomic.h>
 #include <wiring.h>
 
+#include "message.h"
 #include "protocol.h"
 
-static volatile struct {
-  volatile uint8_t rx_data[8] = {0};
-  volatile uint8_t tx_data[8] = {0};
+namespace {
+kvmd::message_buffer rx_buffer;
 
-  volatile uint8_t rx_cnt = 0;
-  volatile uint8_t tx_cnt = 0;
-} state;
+bool rx_rdy = false;
+bool tx_rdy = false;
+volatile uint8_t tx_data[8] = {0};
+uint8_t rx_data[8] = {0};
+uint8_t rx_cnt = 0;
+uint8_t tx_cnt = 0;
+} // namespace
 
 void spi_usi_init() {
   cli();               // Deactivate interrupts
@@ -28,41 +32,31 @@ void spi_usi_init() {
   sei();      // Activate interrupts
 }
 
-bool spi_rx_get(uint8_t *data) {
-  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-    if (!state.tx_data[0] && state.rx_cnt == KVMD_MSG_SZ) {
-      for (auto i = 0; i < KVMD_MSG_SZ; ++i) {
-        data[i] = state.rx_data[i];
-      }
-      return true;
-    }
-    return false;
-  }
-}
+bool spi_rx_get(kvmd::message *msg) { return rx_buffer.next(msg); }
 
-void spi_tx_write(const uint8_t *data) {
-  // no atomic needed because sentinel byte is written last
-  for (int i = KVMD_MSG_SZ - 1; i >= 0; --i) {
-    state.tx_data[i] = data[i];
+void spi_tx_sticky_write(kvmd::message *msg) {
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    for (auto i = 0; i < KVMD_MSG_SZ; ++i) {
+      tx_data[i] = msg->bytes[i];
+    }
   }
 }
 
 // USI interrupt routine. Always executed when 4-bit overflows (after 16 clock
 // edges = 8 clock cycles):
 ISR(USI_OVF_vect) {
-  if (state.tx_data[0] && state.tx_cnt < KVMD_MSG_SZ) {
+  if (tx_rdy && tx_cnt < KVMD_MSG_SZ) {
     // transmit data
-    USIDR = state.tx_data[state.tx_cnt];
-    ++state.tx_cnt;
-    if (state.tx_cnt == KVMD_MSG_SZ) {
-      state.tx_data[0] = 0;
-      state.tx_cnt = 0;
-      state.rx_cnt = 0;
+    USIDR = tx_data[tx_cnt];
+    ++tx_cnt;
+    if (tx_cnt == KVMD_MSG_SZ) {
+      tx_cnt = 0;
+      rx_cnt = 0;
+      tx_rdy = false;
     }
   } else {
     // receive data
     uint8_t data = USIDR;
-    static bool rx_rdy = false;
     if (!rx_rdy && data != 0) {
       if (data != kvmd::MAGIC) {
         // clear flags, shift 1 clock cycle
@@ -73,13 +67,15 @@ ISR(USI_OVF_vect) {
         rx_rdy = true;
       }
     }
-    if (rx_rdy && state.rx_cnt < KVMD_MSG_SZ) {
-      state.rx_data[state.rx_cnt] = data;
-      ++state.rx_cnt;
+    if (rx_rdy && rx_cnt < KVMD_MSG_SZ) {
+      rx_data[rx_cnt] = data;
+      ++rx_cnt;
     }
-    if (state.rx_cnt == KVMD_MSG_SZ) {
+    if (rx_cnt == KVMD_MSG_SZ) {
       // stop receive
       rx_rdy = false;
+      tx_rdy = true;
+      rx_buffer.push(reinterpret_cast<kvmd::message *>(rx_data));
     }
     USIDR = 0;
   }

@@ -109,6 +109,9 @@ inline uint16_t crc16(const uint8_t *buffer, unsigned length) {
 inline uint16_t from_be16(const uint8_t *buf) {
   return (((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);
 }
+inline uint16_t swap16(uint16_t n) {
+  return from_be16(reinterpret_cast<const uint8_t *>(&n));
+}
 
 inline void to_be16(uint16_t from, uint8_t *buf) {
   buf[0] = (uint8_t)(from >> 8);
