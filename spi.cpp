@@ -8,14 +8,11 @@
 #include "protocol.h"
 
 namespace {
-kvmd::message_buffer rx_buffer;
-
 bool rx_rdy = false;
-bool tx_rdy = false;
-volatile uint8_t tx_data[8] = {0};
-uint8_t rx_data[8] = {0};
-uint8_t rx_cnt = 0;
-uint8_t tx_cnt = 0;
+volatile uint8_t tx_data[KVMD_MSG_SZ] = {0};
+volatile uint8_t rx_data[KVMD_MSG_SZ] = {0};
+volatile uint8_t rx_cnt = 0;
+volatile uint8_t tx_cnt = 0;
 } // namespace
 
 void spi_usi_init() {
@@ -32,28 +29,38 @@ void spi_usi_init() {
   sei();      // Activate interrupts
 }
 
-bool spi_rx_get(kvmd::message *msg) { return rx_buffer.next(msg); }
-
-void spi_tx_sticky_write(kvmd::message *msg) {
+bool spi_rx_get(kvmd::message *msg) {
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-    for (auto i = 0; i < KVMD_MSG_SZ; ++i) {
-      tx_data[i] = msg->bytes[i];
+    if (!tx_data[0] && rx_cnt == KVMD_MSG_SZ) {
+      volatile_memcpy(msg, rx_data, KVMD_MSG_SZ);
+      return true;
     }
+  }
+  return false;
+}
+
+void spi_tx_write(const kvmd::message *msg) {
+  for (int i = KVMD_MSG_SZ - 1; i >= 0; --i) {
+    tx_data[i] = msg->bytes[i];
   }
 }
 
 // USI interrupt routine. Always executed when 4-bit overflows (after 16 clock
 // edges = 8 clock cycles):
 ISR(USI_OVF_vect) {
-  if (tx_rdy && tx_cnt < KVMD_MSG_SZ) {
+  if (tx_data[0] && tx_cnt < KVMD_MSG_SZ) {
     // transmit data
+    // if (!USIDR) {
     USIDR = tx_data[tx_cnt];
     ++tx_cnt;
     if (tx_cnt == KVMD_MSG_SZ) {
+      tx_data[0] = 0;
       tx_cnt = 0;
       rx_cnt = 0;
-      tx_rdy = false;
     }
+    // } else {
+    //   USIDR = 0;
+    // }
   } else {
     // receive data
     uint8_t data = USIDR;
@@ -74,10 +81,8 @@ ISR(USI_OVF_vect) {
     if (rx_cnt == KVMD_MSG_SZ) {
       // stop receive
       rx_rdy = false;
-      tx_rdy = true;
-      rx_buffer.push(reinterpret_cast<kvmd::message *>(rx_data));
     }
     USIDR = 0;
   }
-  USISR = 1 << USIOIF;
+  USISR |= 1 << USIOIF;
 }

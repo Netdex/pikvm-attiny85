@@ -6,12 +6,12 @@
 
 #include "message.h"
 
-#define DO PB1  // MISO
 #define DI PB0  // MOSI
+#define DO PB1  // MISO
 #define SCK PB2 // SCLK
 
 #define KVMD_MSG_SZ 8
 
 void spi_usi_init();
 bool spi_rx_get(kvmd::message *msg);
-void spi_tx_sticky_write(kvmd::message *msg);
+void spi_tx_write(const kvmd::message *msg);
