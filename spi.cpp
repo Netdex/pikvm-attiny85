@@ -84,5 +84,5 @@ ISR(USI_OVF_vect) {
     }
     USIDR = 0;
   }
-  USISR |= 1 << USIOIF;
+  USISR = 1 << USIOIF;
 }

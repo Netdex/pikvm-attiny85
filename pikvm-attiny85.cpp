@@ -1,10 +1,17 @@
-#define LAYOUT_US_ENGLISH
-#include <TrinketHidCombo.h>
+#include <Arduino.h>
 
+#include "debug.h"
 #include "keymap.h"
 #include "protocol.h"
 #include "spi.h"
 #include "state.h"
+
+#ifdef KVMD_CDC_DEBUG
+#include <DigiCDC.h>
+#else
+#define LAYOUT_US_ENGLISH
+#include <TrinketHidCombo.h>
+#endif
 
 namespace {
 keyboard kbd;
@@ -14,8 +21,11 @@ uint8_t handle_keyboard_key(const kvmd::args &data) {
   uint8_t code = data.key.code;
   bool state = data.key.state;
   kbd(code, state);
+  DEBUG("key %d %d", kbd.modifier(), kbd.scancodes()[0]);
+#ifndef KVMD_CDC_DEBUG
   TrinketHidCombo.pressKeys(kbd.modifier(), kbd.scancodes(),
                             keyboard::key_limit);
+#endif
   return kvmd::PONG_OK;
 }
 
@@ -50,6 +60,7 @@ uint8_t handle_request(const kvmd::message &msg) {
     case kvmd::COMMAND_MOUSE_MOVE:
     case kvmd::COMMAND_MOUSE_RELATIVE:
     case kvmd::COMMAND_MOUSE_WHEEL:
+      return kvmd::PONG_OK;
     default:
       return kvmd::RESPONSE_INVALID_ERROR;
     }
@@ -78,7 +89,11 @@ void send_response(uint8_t code) {
 
 void setup() {
   spi_usi_init();
+#ifdef KVMD_CDC_DEBUG
+  SerialUSB.begin();
+#else
   TrinketHidCombo.begin();
+#endif
 }
 
 void loop() {
@@ -87,8 +102,12 @@ void loop() {
     send_response(handle_request(msg));
   }
   auto now = millis();
-  if (now - last_usb_poll_ms >= 10) {
+  if (now - last_usb_poll_ms >= 5) {
+#ifdef KVMD_CDC_DEBUG
+    SerialUSB.refresh();
+#else
     TrinketHidCombo.poll();
+#endif
     last_usb_poll_ms = now;
   }
 }

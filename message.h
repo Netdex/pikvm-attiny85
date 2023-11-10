@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "ring_buffer.h"
 #include "util.h"
 
 
@@ -34,7 +33,5 @@ union __attribute__((packed)) message {
   };
   uint8_t bytes[8];
 };
-
-using message_buffer = ring_buffer<message, uint8_t, 4>;
 
 } // namespace kvmd
