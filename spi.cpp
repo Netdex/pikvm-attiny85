@@ -1,3 +1,8 @@
+// ATtiny85:
+// https://www.mouser.com/datasheet/2/268/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATti-1315542.pdf
+// USI SPI:
+// https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/Atmel-2582-Using-the-USI-Module-for-SPI-Communication-on-tinyAVR-and-megaAVR-Devices_ApplicationNote_AVR319.pdf
+
 #include "spi.h"
 
 #include <avr/interrupt.h>
@@ -8,7 +13,8 @@
 #include "protocol.h"
 
 namespace {
-bool rx_rdy = false;
+volatile bool rx_rdy = false;
+volatile bool sync = true;
 volatile uint8_t tx_data[KVMD_MSG_SZ] = {0};
 volatile uint8_t rx_data[KVMD_MSG_SZ] = {0};
 volatile uint8_t rx_cnt = 0;
@@ -21,9 +27,15 @@ void spi_usi_init() {
   DDRB &= ~(1 << SCK); // Set SCK as input
   DDRB |= 1 << DO;     // MISO Pin has to be an output
 
-  USICR = ((1 << USIWM0) | (1 << USICS1) |
-           (1 << USIOIE)); // Activate 3- Wire Mode and use of external clock
-                           // and enable overflow interrupt
+  // PB3 and PB4 are used for V-USB
+
+  // Pull reset to ground (causes interference issues)
+  DDRB |= 1 << PB5;
+  PORTB &= ~(1 << PB5);
+
+  // Activate 3- Wire Mode and use of external clock and enable overflow
+  // interrupt
+  USICR = ((1 << USIWM0) | (1 << USICS1) | (1 << USIOIE));
 
   delay(500); // Let things settle
   sei();      // Activate interrupts
@@ -48,9 +60,9 @@ void spi_tx_write(const kvmd::message *msg) {
 // USI interrupt routine. Always executed when 4-bit overflows (after 16 clock
 // edges = 8 clock cycles):
 ISR(USI_OVF_vect) {
+  USISR = 1 << USIOIF;
   if (tx_data[0] && tx_cnt < KVMD_MSG_SZ) {
     // transmit data
-    // if (!USIDR) {
     USIDR = tx_data[tx_cnt];
     ++tx_cnt;
     if (tx_cnt == KVMD_MSG_SZ) {
@@ -58,20 +70,27 @@ ISR(USI_OVF_vect) {
       tx_cnt = 0;
       rx_cnt = 0;
     }
-    // } else {
-    //   USIDR = 0;
-    // }
   } else {
     // receive data
     uint8_t data = USIDR;
-    if (!rx_rdy && data != 0) {
-      if (data != kvmd::MAGIC) {
-        // clear flags, shift 1 clock cycle
-        USISR = (1 << USISIF) | (1 << USIOIF) | (1 << USIPF) | (1 << USIDC) |
-                (0x0E << USICNT0);
+    USIDR = 0;
+    // We don't have to worry about whole-byte alignment because every
+    // transaction starts with a large number of zeroes, which is guaranteed to
+    // finish a previously unfinished transaction.
+    if (!rx_rdy) {
+      if (data != 0) {
+        if (data == kvmd::MAGIC) {
+          // start receive
+          rx_rdy = true;
+        } else if (!sync) {
+          // We don't have enough pins for a CS, so we do a poor man's
+          // synchronization by adjusting the phase until we detect our magic
+          // word.
+          USISR |= 0x0E << USICNT0;
+        }
+        sync = true;
       } else {
-        // start receive
-        rx_rdy = true;
+        sync = false;
       }
     }
     if (rx_rdy && rx_cnt < KVMD_MSG_SZ) {
@@ -82,7 +101,5 @@ ISR(USI_OVF_vect) {
       // stop receive
       rx_rdy = false;
     }
-    USIDR = 0;
   }
-  USISR = 1 << USIOIF;
 }
