@@ -22,7 +22,7 @@
 #pragma once
 
 #include <stdint.h>
-uint8_t keymap_usb(uint8_t code) {
+inline uint8_t keymap_usb(uint8_t code) {
   switch (code) {
     case 1:
       return 4;  // KeyA

@@ -9,9 +9,10 @@
 
 namespace {
 keyboard kbd;
+mouse ms;
 uint32_t last_usb_poll_ms = 0;
 
-uint8_t handle_keyboard_key(const kvmd::args &data) {
+kvmd::code_t handle_keyboard_key(const kvmd::args &data) {
   uint8_t code = data.key.code;
   bool state = data.key.state;
   kbd(code, state);
@@ -20,26 +21,41 @@ uint8_t handle_keyboard_key(const kvmd::args &data) {
   return kvmd::PONG_OK;
 }
 
-uint8_t handle_mouse_button(const kvmd::args &data) {
-  // uint8_t state = ;
-  // uint8_t extra = msg[1];
-
-  // if (state & kvmd::COMMAND_MOUSE_LEFT_SELECT) {
-  //   bool left = state & kvmd::COMMAND_MOUSE_LEFT_STATE;
-  // }
-  // if (state & kvmd::COMMAND_MOUSE_RIGHT_SELECT) {
-  //   bool right = state & kvmd::COMMAND_MOUSE_RIGHT_STATE;
-  // }
+kvmd::code_t handle_mouse_button(const kvmd::args &data) {
+  ms(mouse_button::LEFT, data.bytes[0] & kvmd::COMMAND_MOUSE_LEFT_SELECT,
+     data.bytes[0] & kvmd::COMMAND_MOUSE_LEFT_STATE);
+  ms(mouse_button::RIGHT, data.bytes[0] & kvmd::COMMAND_MOUSE_RIGHT_SELECT,
+     data.bytes[0] & kvmd::COMMAND_MOUSE_RIGHT_STATE);
+  ms(mouse_button::MIDDLE, data.bytes[0] & kvmd::COMMAND_MOUSE_MIDDLE_SELECT,
+     data.bytes[0] & kvmd::COMMAND_MOUSE_MIDDLE_STATE);
+  TrinketHidCombo.mouseMove(0, 0, 0, ms.button());
   return kvmd::PONG_OK;
 }
 
-uint8_t handle_request(const kvmd::message &msg) {
+kvmd::code_t handle_mouse_move(const kvmd::args &data) {
+  int8_t x = int8_t(data.bytes[0]);
+  int8_t y = int8_t(data.bytes[1]);
+  TrinketHidCombo.mouseMove(x, y, 0, ms.button());
+  return kvmd::PONG_OK;
+}
+
+kvmd::code_t handle_mouse_wheel(const kvmd::args &data) {
+  int8_t delta_y = int8_t(data.bytes[1]);
+  TrinketHidCombo.mouseMove(0, 0, delta_y, ms.button());
+  return kvmd::PONG_OK;
+}
+
+kvmd::code_t handle_request(const kvmd::message &msg) {
   if (kvmd::crc16(msg.bytes, 6) == kvmd::swap16(msg.crc)) {
     switch (msg.op) {
     case kvmd::COMMAND_KEYBOARD_KEY:
       return handle_keyboard_key(msg.data);
     case kvmd::COMMAND_MOUSE_BUTTON:
       return handle_mouse_button(msg.data);
+    case kvmd::COMMAND_MOUSE_RELATIVE:
+      return handle_mouse_move(msg.data);
+    case kvmd::COMMAND_MOUSE_WHEEL:
+      return handle_mouse_wheel(msg.data);
     case kvmd::COMMAND_PING:
       return kvmd::PONG_OK;
     case kvmd::COMMAND_REPEAT:
@@ -49,8 +65,6 @@ uint8_t handle_request(const kvmd::message &msg) {
     case kvmd::COMMAND_SET_CONNECTED:
     case kvmd::COMMAND_CLEAR_HID:
     case kvmd::COMMAND_MOUSE_MOVE:
-    case kvmd::COMMAND_MOUSE_RELATIVE:
-    case kvmd::COMMAND_MOUSE_WHEEL:
       return kvmd::PONG_OK;
     default:
       return kvmd::RESPONSE_INVALID_ERROR;
@@ -59,8 +73,8 @@ uint8_t handle_request(const kvmd::message &msg) {
   return kvmd::RESPONSE_CRC_ERROR;
 }
 
-void send_response(uint8_t code) {
-  static uint8_t last_code = kvmd::RESPONSE_NONE;
+void send_response(kvmd::code_t code) {
+  static kvmd::code_t last_code = kvmd::RESPONSE_NONE;
   code = code ? code : last_code; // repeat the last code
   kvmd::message response = {0};
   response.magic = kvmd::MAGIC_RESP;

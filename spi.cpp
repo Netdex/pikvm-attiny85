@@ -11,6 +11,7 @@
 
 #include "message.h"
 #include "protocol.h"
+#include "util.h"
 
 namespace {
 volatile bool rx_rdy = false;

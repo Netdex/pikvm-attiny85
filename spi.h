@@ -2,7 +2,6 @@
 
 #include <avr/io.h>
 #include <stdbool.h>
-#include <stdint.h>
 
 #include "message.h"
 

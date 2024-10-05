@@ -1,9 +1,8 @@
 #pragma once
 
+#include "keymap.h"
 #include <stdint.h>
 #include <string.h>
-
-#include "keymap.h"
 
 // state machine converting commands to hid reports
 struct keyboard {
@@ -48,6 +47,31 @@ private:
   uint8_t scancodes_[key_limit] = {0};
 };
 
+enum class mouse_button : uint8_t { LEFT = 0x1, RIGHT = 0x2, MIDDLE = 0x4 };
 struct mouse {
-  void operator()(uint8_t code, bool state) {}
+  void operator()(mouse_button btn, bool select, bool state) {
+    if (select) {
+      switch (btn) {
+      case mouse_button::LEFT:
+        left = state;
+        break;
+      case mouse_button::RIGHT:
+        right = state;
+        break;
+      case mouse_button::MIDDLE:
+        middle = state;
+        break;
+      }
+    }
+  }
+
+  uint8_t button() const {
+    return (left ? uint8_t(mouse_button::LEFT) : 0) |
+           (right ? uint8_t(mouse_button::RIGHT) : 0) |
+           (middle ? uint8_t(mouse_button::MIDDLE) : 0);
+  }
+
+  bool left = false;
+  bool right = false;
+  bool middle = false;
 };

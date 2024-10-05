@@ -1,10 +1,8 @@
 #pragma once
 
 #include <stdint.h>
-#include <string.h>
 
-#include "util.h"
-
+#include "protocol.h"
 
 namespace kvmd {
 
@@ -27,7 +25,7 @@ union __attribute__((packed)) args {
 union __attribute__((packed)) message {
   struct {
     uint8_t magic;
-    uint8_t op;
+    code_t op;
     args data;
     uint16_t crc;
   };

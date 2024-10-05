@@ -24,17 +24,20 @@
 #include <stdint.h>
 
 namespace kvmd {
-const uint8_t MAGIC = 0x33;
-const uint8_t MAGIC_RESP = 0x34;
 
-enum response : uint8_t {
+using code_t = uint8_t;
+
+const code_t MAGIC = 0x33;
+const code_t MAGIC_RESP = 0x34;
+
+enum response : code_t {
   RESPONSE_NONE = 0x24,
   RESPONSE_CRC_ERROR = 0x40,
   RESPONSE_INVALID_ERROR = 0x45,
   RESPONSE_TIMEOUT_ERROR = 0x48
 };
 
-enum pong : uint8_t {
+enum pong : code_t {
   PONG_OK = 0x80,
   PONG_CAPS = 0b00000001,
   PONG_SCROLL = 0b00000010,
@@ -44,7 +47,7 @@ enum pong : uint8_t {
   PONG_RESET_REQUIRED = 0b01000000
 };
 
-enum outputs1 : uint8_t {
+enum outputs1 : code_t {
   OUTPUTS1_DYNAMIC = 0b10000000,
   OUTPUTS1_KEYBOARD_MASK = 0b00000111,
   OUTPUTS1_KEYBOARD_USB = 0b00000001,
@@ -56,7 +59,7 @@ enum outputs1 : uint8_t {
   OUTPUTS1_MOUSE_USB_WIN98 = 0b00100000
 };
 
-enum outputs2 : uint8_t {
+enum outputs2 : code_t {
   OUTPUTS2_CONNECTABLE = 0b10000000,
   OUTPUTS2_CONNECTED = 0b01000000,
   OUTPUTS2_HAS_USB = 0b00000001,
@@ -64,7 +67,7 @@ enum outputs2 : uint8_t {
   OUTPUTS2_HAS_USB_WIN98 = 0b00000100,
 };
 
-enum command : uint8_t {
+enum command : code_t {
   COMMAND_PING = 0x01,
   COMMAND_REPEAT = 0x02,
   COMMAND_SET_KEYBOARD = 0x03,
@@ -106,14 +109,17 @@ inline uint16_t crc16(const uint8_t *buffer, unsigned length) {
   return crc;
 }
 
-inline uint16_t from_be16(const uint8_t *buf) {
+inline uint16_t to_u16be(const uint8_t *buf) {
   return (((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);
 }
 inline uint16_t swap16(uint16_t n) {
-  return from_be16(reinterpret_cast<const uint8_t *>(&n));
+  return to_u16be(reinterpret_cast<const uint8_t *>(&n));
+}
+inline int16_t to_s16be(const uint8_t *buf) {
+  return (((int16_t)buf[0] << 8) | (int16_t)buf[1]);
 }
 
-inline void to_be16(uint16_t from, uint8_t *buf) {
+inline void from_u16be(uint16_t from, uint8_t *buf) {
   buf[0] = (uint8_t)(from >> 8);
   buf[1] = (uint8_t)(from & 0xFF);
 }
