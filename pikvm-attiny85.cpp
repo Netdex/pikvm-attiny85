@@ -1,8 +1,10 @@
-#include <Arduino.h>
+// ATtiny85:
+// https://www.mouser.com/datasheet/2/268/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATti-1315542.pdf
 
 #include "protocol.h"
 #include "spi.h"
 #include "state.h"
+#include "timer.h"
 
 #define LAYOUT_US_ENGLISH
 #include <TrinketHidCombo.h>
@@ -10,7 +12,6 @@
 namespace {
 keyboard kbd;
 mouse ms;
-uint32_t last_usb_poll_ms = 0;
 
 kvmd::code_t handle_keyboard_key(const kvmd::args &data) {
   uint8_t code = data.key.code;
@@ -92,19 +93,16 @@ void send_response(kvmd::code_t code) {
 }
 } // namespace
 
-void setup() {
+int main() {
   spi_usi_init();
+  timer0_init();
   TrinketHidCombo.begin();
-}
 
-void loop() {
-  kvmd::message msg;
-  if (spi_rx_get(&msg)) {
-    send_response(handle_request(msg));
+  while (true) {
+    kvmd::message msg;
+    if (spi_rx_get(&msg)) {
+      send_response(handle_request(msg));
+    }
   }
-  auto now = millis();
-  if (now - last_usb_poll_ms >= 5) {
-    TrinketHidCombo.poll();
-    last_usb_poll_ms = now;
-  }
+  return 0;
 }

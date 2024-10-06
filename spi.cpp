@@ -1,13 +1,9 @@
-// ATtiny85:
-// https://www.mouser.com/datasheet/2/268/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATti-1315542.pdf
-// USI SPI:
-// https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/Atmel-2582-Using-the-USI-Module-for-SPI-Communication-on-tinyAVR-and-megaAVR-Devices_ApplicationNote_AVR319.pdf
+// USI SPI: https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/Atmel-2582-Using-the-USI-Module-for-SPI-Communication-on-tinyAVR-and-megaAVR-Devices_ApplicationNote_AVR319.pdf
 
 #include "spi.h"
 
 #include <avr/interrupt.h>
 #include <util/atomic.h>
-#include <wiring.h>
 
 #include "message.h"
 #include "protocol.h"
@@ -37,9 +33,6 @@ void spi_usi_init() {
   // Activate 3- Wire Mode and use of external clock and enable overflow
   // interrupt
   USICR = ((1 << USIWM0) | (1 << USICS1) | (1 << USIOIE));
-
-  delay(500); // Let things settle
-  sei();      // Activate interrupts
 }
 
 bool spi_rx_get(kvmd::message *msg) {
@@ -58,8 +51,9 @@ void spi_tx_write(const kvmd::message *msg) {
   }
 }
 
-// USI interrupt routine. Always executed when 4-bit overflows (after 16 clock
-// edges = 8 clock cycles):
+// USI interrupt routine, always executed when 4-bit overflows (after 16 clock
+// edges = 8 clock cycles)
+// Marked ISR_NOBLOCK as required by USB driver
 ISR(USI_OVF_vect) {
   USISR = 1 << USIOIF;
   if (tx_data[0] && tx_cnt < KVMD_MSG_SZ) {

@@ -125,12 +125,6 @@ void Trinket_Hid_Combo::typeChar(uint8_t ascii)
 	pressKey(0, 0); // immediately release the key after
 }
 
-size_t Trinket_Hid_Combo::write(uint8_t ascii)
-{
-	typeChar(ascii);
-	return 1;
-}
-
 void Trinket_Hid_Combo::pressMultimediaKey(uint8_t key)
 {
 	report_buffer[0] = REPID_MMKEY;

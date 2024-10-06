@@ -23,7 +23,6 @@ License along with TrinketHidCombo. If not, see
 #define _TRINKETHIDCOMBO_H_
 
 #include <stdint.h>
-#include <Print.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,7 +32,7 @@ extern "C" {
 }
 #endif
 
-class Trinket_Hid_Combo : public Print
+class Trinket_Hid_Combo
 {
 	private:
 	public:
@@ -65,13 +64,6 @@ class Trinket_Hid_Combo : public Print
 
 		// returns the state of the three LEDs on a keyboard (caps/num/scroll lock)
 		uint8_t getLEDstate();
-
-		// inherit from "Print", these two write functions are implemented
-		virtual size_t write(uint8_t);
-		using Print::write;
-		// other "print" and "println" functions are automatically available
-		using Print::print;
-		using Print::println;
 };
 
 // helps translate ASCII characters into keycode and modifier combinations, while taking into account whether or not caps lock is on
