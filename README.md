@@ -15,6 +15,9 @@ export MICRONUCLEUS_PATH="$DIGISTUMP_PATH/tools/micronucleus/2.6"
 make upload
 ```
 
+## Schematic
+![pikvm-attiny85](pcb/pikvm-attiny85.svg)
+
 ## Reference
 
 - https://docs.pikvm.org/arduino_hid/
