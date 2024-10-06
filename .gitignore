@@ -1,4 +1,5 @@
 .vscode
 .cache
+.env
 build-*
 compile_commands.json
