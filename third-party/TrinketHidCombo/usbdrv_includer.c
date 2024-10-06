@@ -19,6 +19,4 @@ License along with TrinketHidCombo. If not, see
 <http://www.gnu.org/licenses/>.
 */
 
-#include "cmdline_defs.h"
-#include "usbconfig.h"
 #include "usbdrv/usbdrv.c"

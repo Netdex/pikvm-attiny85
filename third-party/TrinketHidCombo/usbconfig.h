@@ -28,8 +28,6 @@ License along with TrinketHidCombo. If not, see
 <http://www.gnu.org/licenses/>.
 */
 
-#include "cmdline_defs.h"
-
 #ifndef __usbconfig_h_included__
 #define __usbconfig_h_included__
 

@@ -1,13 +1,14 @@
 // ATtiny85:
 // https://www.mouser.com/datasheet/2/268/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATti-1315542.pdf
 
+#include <avr/interrupt.h>
+
+#include <TrinketHidCombo.h>
+
 #include "protocol.h"
 #include "spi.h"
 #include "state.h"
 #include "timer.h"
-
-#define LAYOUT_US_ENGLISH
-#include <TrinketHidCombo.h>
 
 namespace {
 keyboard kbd;
@@ -66,6 +67,7 @@ kvmd::code_t handle_request(const kvmd::message &msg) {
     case kvmd::COMMAND_SET_CONNECTED:
     case kvmd::COMMAND_CLEAR_HID:
     case kvmd::COMMAND_MOUSE_MOVE:
+      // TODO: support absolute mouse since it is superior to relative mouse
       return kvmd::PONG_OK;
     default:
       return kvmd::RESPONSE_INVALID_ERROR;
@@ -77,7 +79,7 @@ kvmd::code_t handle_request(const kvmd::message &msg) {
 void send_response(kvmd::code_t code) {
   static kvmd::code_t last_code = kvmd::RESPONSE_NONE;
   code = code ? code : last_code; // repeat the last code
-  kvmd::message response = {0};
+  kvmd::message response = {{0}};
   response.magic = kvmd::MAGIC_RESP;
   if (code & kvmd::PONG_OK) {
     response.op = kvmd::PONG_OK;

@@ -33,6 +33,7 @@ void spi_usi_init() {
   // Activate 3- Wire Mode and use of external clock and enable overflow
   // interrupt
   USICR = ((1 << USIWM0) | (1 << USICS1) | (1 << USIOIE));
+  sei();
 }
 
 bool spi_rx_get(kvmd::message *msg) {

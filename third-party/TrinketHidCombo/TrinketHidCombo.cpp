@@ -20,7 +20,6 @@ License along with TrinketHidCombo. If not, see
 <http://www.gnu.org/licenses/>.
 */
 
-#include "cmdline_defs.h"
 #include "TrinketHidCombo.h"
 #include "TrinketHidComboC.h"
 

@@ -8,6 +8,7 @@
 ISR(TIMER0_COMPA_vect) { TrinketHidCombo.poll(); }
 
 void timer0_init() {
+  cli();
   // Set timer to CTC mode (Clear Timer on Compare Match)
   TCCR0A |= (1 << WGM01);
 
@@ -19,4 +20,5 @@ void timer0_init() {
 
   // Enable TIMER0 compare match A interrupt
   TIMSK |= (1 << OCIE0A);
+  sei();
 }
