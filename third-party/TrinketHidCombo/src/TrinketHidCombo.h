@@ -43,8 +43,10 @@ class Trinket_Hid_Combo
 
 		// makes a mouse movement
 		// https://github.com/adafruit/Adafruit-Trinket-USB/pull/2/files
-		void mouseMove(signed char x, signed char y, signed char wheel, uint8_t buttonMask);
-		void mouseMove(signed char x, signed char y, uint8_t buttonMask);
+		void mouseMove(int8_t x, int8_t y, int8_t wheel, uint8_t buttonMask);
+		void mouseMove(int8_t x, int8_t y, uint8_t buttonMask);
+
+		void mouseMoveAbs(int16_t x, int16_t y, int8_t wheel, uint8_t buttonMask);
 
 		// presses up to 5 keys, and modifiers (modifiers are keys like shift, CTRL, etc)
 		void pressKey(uint8_t modifiers, uint8_t keycode1, uint8_t keycode2, uint8_t keycode3, uint8_t keycode4, uint8_t keycode5);

@@ -49,12 +49,12 @@ void Trinket_Hid_Combo::poll()
 }
 
 // makes a mouse movement
-void Trinket_Hid_Combo::mouseMove(signed char x, signed char y, uint8_t buttonMask)
+void Trinket_Hid_Combo::mouseMove(int8_t x, int8_t y, uint8_t buttonMask)
 {
 	mouseMove(x, y, 0, buttonMask);
 }
 
-void Trinket_Hid_Combo::mouseMove(signed char x, signed char y, signed char wheel, uint8_t buttonMask)
+void Trinket_Hid_Combo::mouseMove(int8_t x, int8_t y, int8_t wheel, uint8_t buttonMask)
 {
 	signed char * signed_ptr = (signed char *)report_buffer; // this converts signed to unsigned
 
@@ -65,6 +65,23 @@ void Trinket_Hid_Combo::mouseMove(signed char x, signed char y, signed char whee
 	report_buffer[0] = REPID_MOUSE;
 
 	usbReportSend(REPSIZE_MOUSE);
+}
+
+void Trinket_Hid_Combo::mouseMoveAbs(int16_t x, int16_t y, int8_t wheel, uint8_t buttonMask){
+	struct __attribute__((packed)) mouse_abs_report_t  {
+		uint8_t id;
+		uint8_t buttons;
+		uint16_t x;
+		uint16_t y;
+		int8_t v;
+	};
+	mouse_abs_report_t *report = (mouse_abs_report_t*)report_buffer;
+	report->id = REPID_MOUSE_ABS;
+	report->buttons = buttonMask;
+	report->x = ((uint32_t)x + 32768) / 2;
+	report->y = ((uint32_t)y + 32768) / 2;
+	report->v = wheel;
+	usbReportSend(REPSIZE_MOUSE_ABS);
 }
 
 void Trinket_Hid_Combo::pressKey(uint8_t modifiers, uint8_t keycode1)

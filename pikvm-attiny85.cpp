@@ -47,6 +47,15 @@ kvmd::code_t handle_mouse_wheel(const kvmd::args &data) {
   return kvmd::PONG_OK;
 }
 
+kvmd::code_t handle_clear_hid() {
+  kbd.reset();
+  TrinketHidCombo.pressKeys(kbd.modifier(), kbd.scancodes(),
+                            keyboard::key_limit);
+  ms.reset();
+  TrinketHidCombo.mouseMove(0, 0, 0, ms.button());
+  return kvmd::PONG_OK;
+}
+
 kvmd::code_t handle_request(const kvmd::message &msg) {
   if (kvmd::crc16(msg.bytes, 6) == kvmd::swap16(msg.crc)) {
     switch (msg.op) {
@@ -58,6 +67,10 @@ kvmd::code_t handle_request(const kvmd::message &msg) {
       return handle_mouse_move(msg.data);
     case kvmd::COMMAND_MOUSE_WHEEL:
       return handle_mouse_wheel(msg.data);
+    case kvmd::COMMAND_CLEAR_HID:
+      return handle_clear_hid();
+    case kvmd::COMMAND_MOUSE_MOVE:
+      return kvmd::PONG_OK;
     case kvmd::COMMAND_PING:
       return kvmd::PONG_OK;
     case kvmd::COMMAND_REPEAT:
@@ -65,8 +78,6 @@ kvmd::code_t handle_request(const kvmd::message &msg) {
     case kvmd::COMMAND_SET_KEYBOARD:
     case kvmd::COMMAND_SET_MOUSE:
     case kvmd::COMMAND_SET_CONNECTED:
-    case kvmd::COMMAND_CLEAR_HID:
-    case kvmd::COMMAND_MOUSE_MOVE:
       // TODO: support absolute mouse since it is superior to relative mouse
       return kvmd::PONG_OK;
     default:
@@ -85,6 +96,7 @@ void send_response(kvmd::code_t code) {
     response.op = kvmd::PONG_OK;
     response.data.resp.output1 |= kvmd::OUTPUTS1_KEYBOARD_USB;
     response.data.resp.output1 |= kvmd::OUTPUTS1_MOUSE_USB_REL;
+    response.data.resp.output1 |= kvmd::OUTPUTS1_MOUSE_USB_ABS;
     response.data.resp.output2 |= kvmd::OUTPUTS2_CONNECTED;
     response.data.resp.output2 |= kvmd::OUTPUTS2_HAS_USB;
   } else {

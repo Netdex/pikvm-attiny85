@@ -76,84 +76,114 @@ void usbReportSend(uint8_t sz)
 
 // USB HID report descriptor for boot protocol keyboard
 // see HID1_11.pdf appendix B section 1
-// USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH is defined in usbconfig (should be 175)
+// USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH is defined in usbconfig
 const PROGMEM char usbHidReportDescriptor[USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH] = {
-	0x05, 0x01,           // USAGE_PAGE (Generic Desktop)
-	0x09, 0x02,           // USAGE (Mouse)
-	0xa1, 0x01,           // COLLECTION (Application)
-	0x09, 0x01,           //   USAGE (Pointer)
-	0xA1, 0x00,           //   COLLECTION (Physical)
-	0x85, REPID_MOUSE,    //     REPORT_ID
-	0x05, 0x09,           //     USAGE_PAGE (Button)
-	0x19, 0x01,           //     USAGE_MINIMUM
-	0x29, 0x03,           //     USAGE_MAXIMUM
-	0x15, 0x00,           //     LOGICAL_MINIMUM (0)
-	0x25, 0x01,           //     LOGICAL_MAXIMUM (1)
-	0x95, 0x03,           //     REPORT_COUNT (3)
-	0x75, 0x01,           //     REPORT_SIZE (1)
-	0x81, 0x02,           //     INPUT (Data,Var,Abs)
-	0x95, 0x01,           //     REPORT_COUNT (1)
-	0x75, 0x05,           //     REPORT_SIZE (5)
-	0x81, 0x03,           //     INPUT (Const,Var,Abs)
-	0x05, 0x01,           //     USAGE_PAGE (Generic Desktop)
-	0x09, 0x30,           //     USAGE (X)
-	0x09, 0x31,           //     USAGE (Y)
-	0x09, 0x38, 		  //     USAGE (Wheel)
-	0x15, 0x81,           //     LOGICAL_MINIMUM (-127)
-	0x25, 0x7F,           //     LOGICAL_MAXIMUM (127)
-	0x75, 0x08,           //     REPORT_SIZE (8)
-	0x95, 0x03,           //     REPORT_COUNT (3)
-	0x81, 0x06,           //     INPUT (Data,Var,Rel)
-	0xC0,                 //   END_COLLECTION
-	0xC0,                 // END COLLECTION
+	0x05, 0x01,             // USAGE_PAGE (Generic Desktop)
+	0x09, 0x02,             // USAGE (Mouse)
+	0xa1, 0x01,             // COLLECTION (Application)
+	0x09, 0x01,             //   USAGE (Pointer)
+	0xA1, 0x00,             //   COLLECTION (Physical)
+	0x85, REPID_MOUSE,      //     REPORT_ID
+	0x05, 0x09,             //     USAGE_PAGE (Button)
+	0x19, 0x01,             //     USAGE_MINIMUM
+	0x29, 0x03,             //     USAGE_MAXIMUM
+	0x15, 0x00,             //     LOGICAL_MINIMUM (0)
+	0x25, 0x01,             //     LOGICAL_MAXIMUM (1)
+	0x95, 0x03,             //     REPORT_COUNT (3)
+	0x75, 0x01,             //     REPORT_SIZE (1)
+	0x81, 0x02,             //     INPUT (Data,Var,Abs)
+	0x95, 0x01,             //     REPORT_COUNT (1)
+	0x75, 0x05,             //     REPORT_SIZE (5)
+	0x81, 0x03,             //     INPUT (Const,Var,Abs)
+	0x05, 0x01,             //     USAGE_PAGE (Generic Desktop)
+	0x09, 0x30,             //     USAGE (X)
+	0x09, 0x31,             //     USAGE (Y)
+	0x09, 0x38, 	        //     USAGE (Wheel)
+	0x15, 0x81,             //     LOGICAL_MINIMUM (-127)
+	0x25, 0x7F,             //     LOGICAL_MAXIMUM (127)
+	0x75, 0x08,             //     REPORT_SIZE (8)
+	0x95, 0x03,             //     REPORT_COUNT (3)
+	0x81, 0x06,             //     INPUT (Data,Var,Rel)
+	0xC0,                   //   END_COLLECTION
+	0xC0,                   // END COLLECTION
 
-	0x05, 0x01,           // USAGE_PAGE (Generic Desktop)
-	0x09, 0x06,           // USAGE (Keyboard)
-	0xA1, 0x01,           // COLLECTION (Application)
-	0x85, REPID_KEYBOARD, // REPORT_ID
-	0x75, 0x01,           //   REPORT_SIZE (1)
-	0x95, 0x08,           //   REPORT_COUNT (8)
-	0x05, 0x07,           //   USAGE_PAGE (Keyboard)(Key Codes)
-	0x19, 0xE0,           //   USAGE_MINIMUM (Keyboard LeftControl)(224)
-	0x29, 0xE7,           //   USAGE_MAXIMUM (Keyboard Right GUI)(231)
-	0x15, 0x00,           //   LOGICAL_MINIMUM (0)
-	0x25, 0x01,           //   LOGICAL_MAXIMUM (1)
-	0x81, 0x02,           //   INPUT (Data,Var,Abs) ; Modifier byte
-	0x95, 0x01,           //   REPORT_COUNT (1)
-	0x75, 0x08,           //   REPORT_SIZE (8)
-	0x81, 0x03,           //   INPUT (Cnst,Var,Abs) ; Reserved byte
-	0x95, 0x05,           //   REPORT_COUNT (5)
-	0x75, 0x01,           //   REPORT_SIZE (1)
-	0x05, 0x08,           //   USAGE_PAGE (LEDs)
-	0x19, 0x01,           //   USAGE_MINIMUM (Num Lock)
-	0x29, 0x05,           //   USAGE_MAXIMUM (Kana)
-	0x91, 0x02,           //   OUTPUT (Data,Var,Abs) ; LED report
-	0x95, 0x01,           //   REPORT_COUNT (1)
-	0x75, 0x03,           //   REPORT_SIZE (3)
-	0x91, 0x03,           //   OUTPUT (Cnst,Var,Abs) ; LED report padding
-	0x95, 0x05,           //   REPORT_COUNT (5)
-	0x75, 0x08,           //   REPORT_SIZE (8)
-	0x15, 0x00,           //   LOGICAL_MINIMUM (0)
-	0x26, 0xA4, 0x00,     //   LOGICAL_MAXIMUM (164)
-	0x05, 0x07,           //   USAGE_PAGE (Keyboard)(Key Codes)
-	0x19, 0x00,           //   USAGE_MINIMUM (Reserved (no event indicated))(0)
-	0x2A, 0xA4, 0x00,     //   USAGE_MAXIMUM (Keyboard Application)(164)
-	0x81, 0x00,           //   INPUT (Data,Ary,Abs)
-	0xC0,                 // END_COLLECTION
+	0x05, 0x01,	            // USAGE_PAGE (Generic Desktop)
+	0x09, 0x02,	            // USAGE (Mouse)
+	0xA1, 0x01,	            // COLLECTION (Application)
+	0x09, 0x01,	            //   USAGE (Pointer)
+	0xA1, 0x00,	            //   COLLECTION (Physical)
+	0x85, REPID_MOUSE_ABS,  //     REPORT_ID
+	0x05, 0x09,	            //     USAGE_PAGE (Button)
+	0x19, 0x01,	            //     USAGE_MINIMUM (Button 1)
+	0x29, 0x08,	            //     USAGE_MAXIMUM (Button 8)
+	0x15, 0x00,	            //     LOGICAL_MINIMUM (0)
+	0x25, 0x01,	            //     LOGICAL_MAXIMUM (1)
+	0x95, 0x08,	            //     REPORT_COUNT (8)
+	0x75, 0x01,	            //     REPORT_SIZE (1)
+	0x81, 0x02,	            //     INPUT (Data,Var,Abs)
+	0x05, 0x01,	            //     USAGE_PAGE (Generic Desktop)
+	0x09, 0x30,	            //     USAGE (X)
+	0x09, 0x31,	            //     USAGE (Y)
+	0x16, 0x00, 0x00,	    //     LOGICAL_MINIMUM (0)
+	0x26, 0xFF, 0x7F,	    //     LOGICAL_MAXIMUM (32767)
+	0x75, 0x10,	            //     REPORT_SIZE (16)
+	0x95, 0x02,	            //     REPORT_COUNT (2)
+	0x81, 0x02,	            //     INPUT (Data,Var,Abs)
+	0x09, 0x38,	            //     USAGE (Wheel)
+	0x15, 0x81,	            //     LOGICAL_MINIMUM (-127)
+	0x25, 0x7F,	            //     LOGICAL_MAXIMUM (127)
+	0x75, 0x08,	            //     REPORT_SIZE (8)
+	0x95, 0x01,	            //     REPORT_COUNT (1)
+	0x81, 0x06,	            //     INPUT (Data,Var,Rel)
+	0xC0,                   //   END_COLLECTION (Physical)
+	0xC0,                   // END_COLLECTION
 
-	// this second multimedia key report is what handles the multimedia keys
-	0x05, 0x0C,           // USAGE_PAGE (Consumer Devices)
-	0x09, 0x01,           // USAGE (Consumer Control)
-	0xA1, 0x01,           // COLLECTION (Application)
-	0x85, REPID_MMKEY,    //   REPORT_ID
-	0x19, 0x00,           //   USAGE_MINIMUM (Unassigned)
-	0x2A, 0x3C, 0x02,     //   USAGE_MAXIMUM
-	0x15, 0x00,           //   LOGICAL_MINIMUM (0)
-	0x26, 0x3C, 0x02,     //   LOGICAL_MAXIMUM
-	0x95, 0x01,           //   REPORT_COUNT (1)
-	0x75, 0x10,           //   REPORT_SIZE (16)
-	0x81, 0x00,           //   INPUT (Data,Ary,Abs)
-	0xC0,                 // END_COLLECTION
+	0x05, 0x01,             // USAGE_PAGE (Generic Desktop)
+	0x09, 0x06,             // USAGE (Keyboard)
+	0xA1, 0x01,             // COLLECTION (Application)
+	0x85, REPID_KEYBOARD,   // REPORT_ID
+	0x75, 0x01,             //   REPORT_SIZE (1)
+	0x95, 0x08,             //   REPORT_COUNT (8)
+	0x05, 0x07,             //   USAGE_PAGE (Keyboard)(Key Codes)
+	0x19, 0xE0,             //   USAGE_MINIMUM (Keyboard LeftControl)(224)
+	0x29, 0xE7,             //   USAGE_MAXIMUM (Keyboard Right GUI)(231)
+	0x15, 0x00,             //   LOGICAL_MINIMUM (0)
+	0x25, 0x01,             //   LOGICAL_MAXIMUM (1)
+	0x81, 0x02,             //   INPUT (Data,Var,Abs) ; Modifier byte
+	0x95, 0x01,             //   REPORT_COUNT (1)
+	0x75, 0x08,             //   REPORT_SIZE (8)
+	0x81, 0x03,             //   INPUT (Cnst,Var,Abs) ; Reserved byte
+	0x95, 0x05,             //   REPORT_COUNT (5)
+	0x75, 0x01,             //   REPORT_SIZE (1)
+	0x05, 0x08,             //   USAGE_PAGE (LEDs)
+	0x19, 0x01,             //   USAGE_MINIMUM (Num Lock)
+	0x29, 0x05,             //   USAGE_MAXIMUM (Kana)
+	0x91, 0x02,             //   OUTPUT (Data,Var,Abs) ; LED report
+	0x95, 0x01,             //   REPORT_COUNT (1)
+	0x75, 0x03,             //   REPORT_SIZE (3)
+	0x91, 0x03,             //   OUTPUT (Cnst,Var,Abs) ; LED report padding
+	0x95, 0x05,             //   REPORT_COUNT (5)
+	0x75, 0x08,             //   REPORT_SIZE (8)
+	0x15, 0x00,             //   LOGICAL_MINIMUM (0)
+	0x26, 0xA4, 0x00,       //   LOGICAL_MAXIMUM (164)
+	0x05, 0x07,             //   USAGE_PAGE (Keyboard)(Key Codes)
+	0x19, 0x00,             //   USAGE_MINIMUM (Reserved (no event indicated))(0)
+	0x2A, 0xA4, 0x00,       //   USAGE_MAXIMUM (Keyboard Application)(164)
+	0x81, 0x00,             //   INPUT (Data,Ary,Abs)
+	0xC0,                   // END_COLLECTION
+
+	0x05, 0x0C,             // USAGE_PAGE (Consumer Devices)
+	0x09, 0x01,             // USAGE (Consumer Control)
+	0xA1, 0x01,             // COLLECTION (Application)
+	0x85, REPID_MMKEY,      //   REPORT_ID
+	0x19, 0x00,             //   USAGE_MINIMUM (Unassigned)
+	0x2A, 0x3C, 0x02,       //   USAGE_MAXIMUM
+	0x15, 0x00,             //   LOGICAL_MINIMUM (0)
+	0x26, 0x3C, 0x02,       //   LOGICAL_MAXIMUM
+	0x95, 0x01,             //   REPORT_COUNT (1)
+	0x75, 0x10,             //   REPORT_SIZE (16)
+	0x81, 0x00,             //   INPUT (Data,Ary,Abs)
+	0xC0,                   // END_COLLECTION
 
 	// system controls, like power, needs a 3rd different report and report descriptor
 	0x05, 0x01,             // USAGE_PAGE (Generic Desktop)
@@ -206,6 +236,7 @@ usbMsgLen_t usbFunctionSetup(uint8_t data[8])
 			report_buffer[1] = report_buffer[2] = report_buffer[3] = report_buffer[4] = report_buffer[5] = report_buffer[6] = report_buffer[7] = 0; // clear the report
 			// determine the return data length based on which report ID was requested
 			if (rq->wValue.bytes[0] == REPID_MOUSE)      return REPSIZE_MOUSE;
+			if (rq->wValue.bytes[0] == REPID_MOUSE_ABS)  return REPSIZE_MOUSE_ABS;
 			if (rq->wValue.bytes[0] == REPID_KEYBOARD)   return REPSIZE_KEYBOARD;
 			if (rq->wValue.bytes[0] == REPID_MMKEY)      return REPSIZE_MMKEY;
 			if (rq->wValue.bytes[0] == REPID_SYSCTRLKEY) return REPSIZE_SYSCTRLKEY;

@@ -1,5 +1,5 @@
 /*
-this file's purpose is to trick the Arduino IDE into including a file for compilation
+Header file for TrinketHidComboC.c
 
 Copyright (c) 2013 Adafruit Industries
 All rights reserved.
@@ -19,4 +19,37 @@ License along with TrinketHidCombo. If not, see
 <http://www.gnu.org/licenses/>.
 */
 
-#include "usbdrv/usbdrv.c"
+#ifndef _TRINKETHIDCOMBOC_H_
+#define _TRINKETHIDCOMBOC_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdint.h>
+
+extern char usb_hasCommed;
+extern uint8_t led_state;
+extern uint8_t report_buffer[8];
+
+void usbBegin();
+void usbPollWrapper();
+void usbReportSend(uint8_t sz);
+
+#define REPID_MOUSE         1
+#define REPID_MOUSE_ABS     2
+#define REPID_KEYBOARD      3
+#define REPID_MMKEY         4
+#define REPID_SYSCTRLKEY    5
+
+#define REPSIZE_MOUSE       5
+#define REPSIZE_MOUSE_ABS   6
+#define REPSIZE_KEYBOARD    8
+#define REPSIZE_MMKEY       3
+#define REPSIZE_SYSCTRLKEY  2
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

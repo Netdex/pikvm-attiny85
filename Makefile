@@ -15,5 +15,5 @@ ARDUINO_LIBS = TrinketHidCombo
 include third-party/arduino-mk/Arduino.mk
 
 compdb:
-	$(MAKE) clean
+	$(MAKE) clean && rm -f compile_commands.json
 	compiledb $(MAKE)

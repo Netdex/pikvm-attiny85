@@ -8,6 +8,8 @@
 struct keyboard {
   constexpr static size_t key_limit = 5;
 
+  keyboard() { reset(); }
+
   void operator()(uint8_t code, bool state) {
     uint8_t scan = keymap_usb(code);
     if (scan >= 0xE0 && scan <= 0xE7) {
@@ -34,7 +36,7 @@ struct keyboard {
           }
         }
         // bad state
-        memset(scancodes_, 0, key_limit);
+        reset();
       }
     }
   }
@@ -42,13 +44,21 @@ struct keyboard {
   uint8_t modifier() { return modifier_; }
   uint8_t *scancodes() { return scancodes_; }
 
+  void reset() {
+    modifier_ = 0;
+    memset(scancodes_, 0, key_limit);
+  }
+
 private:
-  uint8_t modifier_ = 0;
-  uint8_t scancodes_[key_limit] = {0};
+  uint8_t modifier_;
+  uint8_t scancodes_[key_limit];
 };
 
 enum class mouse_button : uint8_t { LEFT = 0x1, RIGHT = 0x2, MIDDLE = 0x4 };
+
 struct mouse {
+  mouse() { reset(); }
+
   void operator()(mouse_button btn, bool select, bool state) {
     if (select) {
       switch (btn) {
@@ -71,7 +81,13 @@ struct mouse {
            (middle ? uint8_t(mouse_button::MIDDLE) : 0);
   }
 
-  bool left = false;
-  bool right = false;
-  bool middle = false;
+  void reset() {
+    left = false;
+    right = false;
+    middle = false;
+  }
+
+  bool left;
+  bool right;
+  bool middle;
 };
